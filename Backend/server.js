@@ -36,6 +36,7 @@ app.use("/api", TaskRouter)
 app.use("/api", RemarkRouter)
 
 
+console.log("port ", process.env.PORT);
 
 app.listen(process.env.PORT, () => {
     console.log(`Server Is Running At ${process.env.PORT}`)
