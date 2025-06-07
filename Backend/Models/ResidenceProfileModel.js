@@ -99,6 +99,12 @@ const ResidencySchema = new mongoose.Schema({
     },
     latlang:{
         type:String
+    },
+     latitude: {
+        type: String
+    },
+    longitude: {
+        type: String
     }
 })
 
