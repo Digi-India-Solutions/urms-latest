@@ -37,7 +37,6 @@ const Home = () => {
               <Route path={"/add-team"} element={<AddCategory />} />
               <Route path={"/edit-category/:id"} element={<EditCategory />} />
 
-
               {/* Orders */}
               <Route path={"/all-backend-users"} element={<AllUsers />} />
               <Route path={"/all-team-users"} element={<TeamUsers />} />
@@ -62,8 +61,6 @@ const Home = () => {
               <Route path='/all-pending-task-backend' element={<AllTeamLeaderTask/>} />
               
               <Route path='/all-pending-task-admin' element={<AdminPendingTask/>} />
-
-
 
 
 

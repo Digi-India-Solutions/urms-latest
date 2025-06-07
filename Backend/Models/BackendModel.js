@@ -24,6 +24,12 @@ const backendSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
+    },
+     latitude: {
+        type: String
+    },
+    longitude: {
+        type: String
     }
 }, { timestamps: true });
 
