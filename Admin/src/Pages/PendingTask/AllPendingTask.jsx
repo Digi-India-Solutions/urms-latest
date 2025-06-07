@@ -131,7 +131,7 @@ const AllPendingTask = () => {
                   children: [
                     new ImageRun({
                       data: buffer,
-                      transformation: { width: 150, height: 100 },
+                      transformation: { width: 250, height: 150 },
                     }),
                   ],
                   alignment: AlignmentType.CENTER,
@@ -493,14 +493,35 @@ const AllPendingTask = () => {
                 <p>{selectedRemark}</p>
                 <div className="image-gallery">
                   {selectedImages.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image}
-                      alt={`Remark Image ${index + 1}`}
-                      style={{ maxWidth: "100%" }}
-                    />
+                    <div key={index} style={{ position: "relative", marginBottom: "10px" }}>
+                      <img
+                        src={image}
+                        alt={`Remark Image ${index + 1}`}
+                        style={{ maxWidth: "100%", width: "100%", height: "400px", objectFit: "fill" }}
+                      />
+                      <div
+                        className="updated-time"
+                        style={{
+                          position: "absolute",
+                          bottom: "8px",
+                          right: "8px", // Changed to left for better UX
+                          backgroundColor: "rgba(0, 0, 0, 0.6)",
+                          color: "#fff",
+                          padding: "6px 10px",
+                          fontSize: "13px",
+                          borderRadius: "4px",
+                          lineHeight: "1.4",
+                          width: "fit-content",
+                          whiteSpace: "pre-line", // Ensures line break works
+                        }}
+                      >
+                        Date & Time : Sat May 24 12:08 2025 {"\n"}
+                        Location : 28.6377841 , 77.2244562
+                      </div>
+                    </div>
                   ))}
                 </div>
+
               </div>
               <button
                 className="btn btn-outline-primary"
