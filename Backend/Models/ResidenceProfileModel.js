@@ -105,7 +105,19 @@ const ResidencySchema = new mongoose.Schema({
     },
     longitude: {
         type: String
-    }
+    },
+    addressImageLatitude: {
+    type: [String],
+  },
+  addressImageTimestamp: {
+    type: [String],
+  },
+  imagesLatitude: {
+    type: [String],
+  },
+  imagesTimestamp: {
+    type: [String],
+  },
 })
 
 
