@@ -1,10 +1,13 @@
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { VerticalAlign } from "docx";
-
-import { jsPDF } from "jspdf";
+import { useRef } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import {
   Document,
   Packer,
@@ -19,6 +22,10 @@ import {
 } from "docx";
 import { saveAs } from "file-saver";
 import stampPicture from "../../Images/Picture1.jpg";
+import ReportGenerator from "./GeneratePdf";
+import PdfGenerator from "./GeneratePdf";
+pdfMake.vfs =
+  pdfFonts?.pdfMake?.vfs || pdfFonts?.default?.pdfMake?.vfs || pdfFonts?.vfs;
 const AllPendingTask = () => {
   const [tasks, setTasks] = useState([]);
   const [remarkData, setRemarkData] = useState([]);
@@ -35,8 +42,188 @@ const AllPendingTask = () => {
     const blob = await response.blob();
     return await blob.arrayBuffer();
   };
+  const fetchImageAsBase64 = async (url) => {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+  const getAllImages = (remark) => {
+    const addressImages = remark?.addressImage || [];
+    const otherImages = remark?.images || [];
+    return [...addressImages, ...otherImages];
+  };
+  const getRemarkForTask = (taskId) => {
+    return remarkData.find((remark) => remark.taskID?._id === taskId) || {};
+  };
 
-  const generateWordDoc = async (task, remarkText, selectedImages = []) => {
+  const generatePdfReport = async (task, stampPicture) => {
+    const remark = getRemarkForTask(task._id);
+    const remarkText = remark?.remark || "No Remark";
+
+    const selectedImages = getAllImages(remark) || [];
+    const fetchImageAsBase64 = async (url) => {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    };
+
+    // Convert images to base64
+    const stampBase64 = await fetchImageAsBase64(stampPicture);
+    const imageBase64List = await Promise.all(
+      selectedImages.slice(0, 6).map(async (img) => {
+        try {
+          return await fetchImageAsBase64(img);
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    // Task detail rows
+    const taskDetails = [
+      ["Client Name", task.bankName],
+      ["Name of applicant", task?.applicantName || "N/A"],
+      ["Application no", task._id],
+      ["Product", task.product],
+      ["Applicant residence address", task.address],
+      ["Applicant mob. No.", task.contactNumber],
+      ["Date of receiving", task.assignDate],
+      ["Date of reporting", new Date().toLocaleDateString()],
+    ];
+
+    const taskTable = {
+      table: {
+        widths: ["*", "*"],
+        body: taskDetails.map(([label, value]) => [
+          { text: label, bold: true, fontSize: 12 },
+          { text: value || "-", fontSize: 11 },
+        ]),
+      },
+      layout: "lightHorizontalLines",
+      margin: [0, 10, 0, 20],
+    };
+
+    const remarkTable = {
+      table: {
+        widths: ["*"],
+        body: [
+          [
+            {
+              stack: [
+                {
+                  text: "Verification Remarks:",
+                  bold: true,
+                  fontSize: 14,
+                  margin: [0, 0, 0, 6],
+                },
+                { text: remarkText || "N/A", fontSize: 11 },
+              ],
+            },
+          ],
+        ],
+      },
+      layout: "lightHorizontalLines",
+      margin: [0, 0, 0, 20],
+    };
+
+    const imageCaption =
+      "Date & Time : Sat May 24 12:08 2025\nLocation : 28.6377841 , 77.2244562";
+
+    // Create image rows (2 rows of 3 images max)
+    const photoRows = [];
+    for (let i = 0; i < 6; i += 3) {
+      const row = [];
+      for (let j = 0; j < 3; j++) {
+        const index = i + j;
+        const img = imageBase64List[index];
+        if (img) {
+          row.push({
+            stack: [
+              { image: img, width: 150, height: 100, alignment: "center" },
+              {
+                text: imageCaption,
+                fontSize: 9,
+                alignment: "center",
+                margin: [0, 5, 0, 0],
+              },
+            ],
+            margin: [5, 5, 5, 5],
+          });
+        } else {
+          row.push({ text: "", margin: [5, 5, 5, 5] });
+        }
+      }
+      photoRows.push({ columns: row });
+    }
+
+    const docDefinition = {
+      content: [
+        { text: "URMS INDIA PRIVATE LIMITED", style: "header" },
+        {
+          text: "Verification Report",
+          style: "subheader",
+          margin: [0, 10, 0, 20],
+        },
+        taskTable,
+        remarkTable,
+        {
+          text: "Photographs",
+          bold: true,
+          fontSize: 13,
+          margin: [0, 10, 0, 10],
+        },
+        ...photoRows,
+        {
+          text: "Sign And Stamp",
+          alignment: "center",
+          bold: true,
+          fontSize: 13,
+          margin: [0, 30, 0, 10],
+        },
+        {
+          image: stampBase64,
+          width: 100,
+          height: 50,
+          alignment: "center",
+        },
+      ],
+      styles: {
+        header: {
+          fontSize: 18,
+          bold: true,
+          alignment: "center",
+        },
+        subheader: {
+          fontSize: 14,
+          bold: true,
+          alignment: "center",
+        },
+      },
+      defaultStyle: {
+        font: "Roboto",
+      },
+      pageSize: "A4",
+      pageMargins: [40, 40, 40, 60],
+    };
+
+    pdfMake.createPdf(docDefinition).download(`task_${task._id}_report.pdf`);
+  };
+
+  const generateWordDoc = async (task) => {
+    const remark = getRemarkForTask(task._id);
+    const remarkText = remark?.remark || "No Remark";
+
+    const selectedImages = getAllImages(remark) || [];
     const stampBuffer = await getImageBuffer(stampPicture);
 
     const imageBuffers = await Promise.all(
@@ -120,7 +307,8 @@ const AllPendingTask = () => {
     });
 
     // Example caption used repeatedly
-    const imageCaption = "Date & Time : Sat May 24 12:08 2025\nLocation : 28.6377841 , 77.2244562";
+    const imageCaption =
+      "Date & Time : Sat May 24 12:08 2025\nLocation : 28.6377841 , 77.2244562";
 
     // Create the image table rows
     const imageTableRows = [];
@@ -160,7 +348,9 @@ const AllPendingTask = () => {
         } else {
           rowCells.push(
             new TableCell({
-              children: [new Paragraph({ text: "", alignment: AlignmentType.CENTER })],
+              children: [
+                new Paragraph({ text: "", alignment: AlignmentType.CENTER }),
+              ],
             })
           );
         }
@@ -172,7 +362,6 @@ const AllPendingTask = () => {
         })
       );
     }
-
 
     // Final Document
     const doc = new Document({
@@ -264,6 +453,234 @@ const AllPendingTask = () => {
     saveAs(blob, `task_${task._id}_report.docx`);
   };
 
+  const generatePDF = (task) => {
+    const remark = getRemarkForTask(task._id);
+    const remarkText = remark?.remark || "No Remark";
+
+    const selectedImages = getAllImages(remark) || [];
+    const groups = [];
+    for (let i = 0; i < selectedImages.length; i += 3) {
+      const group = selectedImages.slice(i, i + 3);
+      const groupHtml = `
+      <div class="img-group">
+        ${group
+          .map(
+            (img) => `
+              <div class="img-box">
+                <div class="img-caption">${"Date & Time : Sat May 24 12:08 2025<br>Location : 28.6377841 , 77.2244562"}</div>
+                <img src="${img}" alt="Image" />
+              </div>
+            `
+          )
+          .join("")}
+      </div>
+    `;
+      groups.push(groupHtml);
+    }
+    return `
+    <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .pdf-main-container {
+            width: 70%;
+            margin: 0 auto;
+            padding: 15px;
+            border: 1px solid #000;
+            background-color: #fff;
+        }
+
+        .center-text {
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            text-transform: uppercase;
+            margin: 4px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        .remarks-title {
+            text-align: center;
+            font-weight: bold;
+            background-color: #e2e2e2;
+            border: 1px solid #000;
+            padding: 6px;
+            margin-top: 15px;
+            text-transform: uppercase;
+        }
+
+        .remarks-section {
+            border: 1px solid #000;
+            padding: 10px;
+            margin-top: -1px;
+            background-color: #fdfdfd;
+            line-height: 1.5;
+        }
+
+        .img-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .img-box {
+            width: 32%;
+            border: 1px solid #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: #f9f9f9;
+            position: relative;
+        }
+
+        .img-caption {
+            font-size: 10px;
+            text-align: center;
+            padding: 6px;
+            font-weight: bold;
+          background-color: rgba(0, 0, 0, 0.6);
+            max-width: 90%;
+            margin: auto;
+            color: white;
+            border-radius: 5px;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
+
+        .img-box img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .signature {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .stamp img {
+            margin-top: 2px;
+            width: 80px;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="pdf-main-container">
+
+        <div class="center-text">URMS INDIA PRIVATE LIMITED</div>
+        <div class="center-text">Verification Report</div>
+<table>
+      
+            <tr>
+                <th>Client Name</th>
+                <td>${task.bankName}</td>
+                <th>Name of applicant</th>
+                <td>${task?.applicantName}</td>
+            </tr>
+            <tr>
+                <th>Application no</th>
+                <td>${task._id}</td>
+                <th>Product</th>
+                <td>${task.product}</td>
+            </tr>
+            <tr>
+                <th>Applicant residence address</th>
+                <td>${task.address}</td>
+                <th>Applicant mob. No.</th>
+                <td>${task.contactNumber}</td>
+            </tr>
+            <tr>
+                <th>Date of receiving</th>
+                <td>${task.assignDate}</td>
+                <th>Date of reporting</th>
+                <td>${new Date().toLocaleDateString()}</td>
+            </tr>
+        </table>
+
+        <div class="remarks-title">Verification Remarks</div>
+        <div class="remarks-section">
+          ${remarkText}
+        </div>
+
+        <table>
+            <tr>
+                <th style="text-align: center;">Status</th>
+                <th style="text-align: center;">@</th>
+            </tr>
+            <tr>
+                <th colspan="2" style="text-align: center;">Photography</th>
+            </tr>
+        </table>
+
+          
+           ${groups}
+
+        <div class="signature">
+            Sign And Stamp
+            <div class="stamp">
+                <img src="${stampPicture}" alt="Stamp" />
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>
+    `;
+  };
+
+  const handlePdf = async (task) => {
+    const toastId = toast.loading("Generating PDF...");
+    try {
+      const res = await axios.post(
+        "https://api.zaikanuts.shop/api/generate-pdf",
+        {
+          htmlContent: generatePDF(task),
+        },
+        {
+          responseType: "blob",
+        }
+      );
+      toast.dismiss(toastId);
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = `${task?.applicantName}-${task.assignDate}.pdf`;
+      link.click();
+      toast.success("PDF generated successfully");
+    } catch (error) {
+      console.log("Error generating PDF", error);
+      toast.error("Error generating PDF");
+    }
+  };
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -298,12 +715,6 @@ const AllPendingTask = () => {
   }, []);
 
   const filterData = tasks.filter((task) => task.status === "Draft");
-
-  const getAllImages = (remark) => {
-    const addressImages = remark?.addressImage || [];
-    const otherImages = remark?.images || [];
-    return [...addressImages, ...otherImages];
-  };
 
   const downloadImagesAsPdf = async (images, taskId) => {
     const doc = new jsPDF();
@@ -390,10 +801,6 @@ const AllPendingTask = () => {
     doc.save(`task_${taskId}_images.pdf`);
   };
 
-  const getRemarkForTask = (taskId) => {
-    return remarkData.find((remark) => remark.taskID?._id === taskId) || {};
-  };
-
   //   const handleViewRemark = (remark) => {
   //     setSelectedRemark(remark?.remark || "No Remark");
   //     setSelectedImages(getAllImages(remark)); // Set the images related to this remark
@@ -456,7 +863,8 @@ const AllPendingTask = () => {
                 <th scope="col">Address</th>
                 <th scope="col">Trig</th>
                 <th scope="col">VR</th>
-                <th scope="col">Images</th>
+                <th scope="col">Pdf</th>
+                <th scope="col">MS Word</th>
                 <th scope="col">Remark</th>
                 <th scope="col">Mark As Complete</th>
               </tr>
@@ -477,7 +885,7 @@ const AllPendingTask = () => {
                     <td>{task.address}</td>
                     <td>{task.trigger}</td>
                     <td>{task.verifierNameOrId}</td>
-                    <td>
+                    {/* <td>
                       {allImages.length > 0 ? (
                         <button
                           onClick={() =>
@@ -490,6 +898,28 @@ const AllPendingTask = () => {
                       ) : (
                         <p>No Images</p>
                       )}
+                    </td> */}
+                    <td>
+                      <button
+                        className="	btn btn-danger mt-2"
+                        onClick={() =>
+                          handlePdf(tasks.find((t) => t._id === task._id))
+                        }
+                      >
+                        Download PDF
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-outline-primary"
+                        onClick={() =>
+                          generateWordDoc(
+                            tasks.find((t) => t._id === task._id),
+                          )
+                        }
+                      >
+                        Download Word
+                      </button>
                     </td>
                     <td>
                       <button
@@ -531,11 +961,19 @@ const AllPendingTask = () => {
                 <p>{selectedRemark}</p>
                 <div className="image-gallery">
                   {selectedImages.map((image, index) => (
-                    <div key={index} style={{ position: "relative", marginBottom: "10px" }}>
+                    <div
+                      key={index}
+                      style={{ position: "relative", marginBottom: "10px" }}
+                    >
                       <img
                         src={image}
                         alt={`Remark Image ${index + 1}`}
-                        style={{ maxWidth: "100%", width: "100%", height: "400px", objectFit: "fill" }}
+                        style={{
+                          maxWidth: "100%",
+                          width: "100%",
+                          height: "400px",
+                          objectFit: "fill",
+                        }}
                       />
                       <div
                         className="updated-time"
@@ -559,22 +997,8 @@ const AllPendingTask = () => {
                     </div>
                   ))}
                 </div>
+              </div>
 
-              </div>
-              <button
-                className="btn btn-outline-primary"
-                onClick={() =>
-                  generateWordDoc(selectedTask, selectedRemark, selectedImages)
-                }
-              >
-                Download Word
-              </button>
-              <div
-                className="	btn btn-danger mt-2"
-                onClick={() => downloadImagesAsPdf(selectedImages, selectedTask._id)}
-              >
-                Download PDF
-              </div>
               <div className="modal-footer">
                 <button
                   type="button"

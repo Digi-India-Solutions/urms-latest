@@ -15,7 +15,7 @@ const BackendRouter = require("./Routes/BackendRoute");
 const FieldRouter = require("./Routes/FieldRoute");
 const TaskRouter = require("./Routes/taskRoutes");
 const RemarkRouter = require("./Routes/RemarkRoute");
-
+const PdfRouter = require("./Routes/PdfRoute")
 app.use(cors());
 app.use(express.json());
 app.set(express.static("Public"));
@@ -34,6 +34,7 @@ app.use("/api", BackendRouter);
 app.use("/api", FieldRouter);
 app.use("/api", TaskRouter);
 app.use("/api", RemarkRouter);
+app.use("/api",PdfRouter)
 
 app.listen(process.env.PORT, () => {
   console.log(`Server Is Running At ${process.env.PORT}`);
