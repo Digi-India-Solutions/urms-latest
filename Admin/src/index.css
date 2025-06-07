@@ -157,6 +157,7 @@ ul {
 
 .d-table .bt.delete {
   background: red;
+  border: none;
 }
 
 

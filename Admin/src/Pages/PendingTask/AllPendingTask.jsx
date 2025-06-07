@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { VerticalAlign } from "docx";
+
 import { jsPDF } from "jspdf";
 import {
   Document,
@@ -117,16 +119,25 @@ const AllPendingTask = () => {
       ],
     });
 
+    // Example caption used repeatedly
+    const imageCaption = "Date & Time : Sat May 24 12:08 2025\nLocation : 28.6377841 , 77.2244562";
+
+    // Create the image table rows
     const imageTableRows = [];
+
     for (let i = 0; i < 6; i += 3) {
       const rowCells = [];
 
       for (let j = 0; j < 3; j++) {
-        const buffer = imageBuffers[i + j];
+        const index = i + j;
+        const buffer = imageBuffers[index];
+
         if (buffer) {
           rowCells.push(
             new TableCell({
+              verticalAlign: VerticalAlign.CENTER,
               children: [
+                // Image
                 new Paragraph({
                   children: [
                     new ImageRun({
@@ -136,17 +147,34 @@ const AllPendingTask = () => {
                   ],
                   alignment: AlignmentType.CENTER,
                 }),
+
+                // Caption
+                new Paragraph({
+                  text: imageCaption,
+                  alignment: AlignmentType.CENTER,
+                  spacing: { before: 100 },
+                }),
               ],
             })
           );
         } else {
-          rowCells.push(new TableCell({ children: [new Paragraph(" ")] }));
+          rowCells.push(
+            new TableCell({
+              children: [new Paragraph({ text: "", alignment: AlignmentType.CENTER })],
+            })
+          );
         }
       }
 
-      imageTableRows.push(new TableRow({ children: rowCells }));
+      imageTableRows.push(
+        new TableRow({
+          children: rowCells,
+        })
+      );
     }
 
+
+    // Final Document
     const doc = new Document({
       sections: [
         {
@@ -158,9 +186,9 @@ const AllPendingTask = () => {
                 new TextRun({
                   text: "URMS INDIA PRIVATE LIMITED",
                   bold: true,
-                  size: 36,
+                  size: 36, // 18pt
                 }),
-              ], // 18pt
+              ],
             }),
             new Paragraph({
               alignment: AlignmentType.CENTER,
@@ -169,11 +197,12 @@ const AllPendingTask = () => {
                 new TextRun({
                   text: "Verification Report",
                   bold: true,
-                  size: 32,
+                  size: 32, // 16pt
                 }),
-              ], // 16pt
+              ],
             }),
 
+            // Task Details Table
             new Table({
               width: { size: 100, type: WidthType.PERCENTAGE },
               rows: taskDetails,
@@ -183,28 +212,37 @@ const AllPendingTask = () => {
             remarkTable,
 
             new Paragraph({ text: " " }),
+
+            // Photographs Title
             new Paragraph({
               children: [
                 new TextRun({ text: "Photographs", bold: true, size: 28 }),
-              ], // 14pt
+              ],
+              spacing: { before: 300, after: 100 },
             }),
+
+            // Image Table
             new Table({
               width: { size: 100, type: WidthType.PERCENTAGE },
               rows: imageTableRows,
             }),
 
             new Paragraph({ text: " " }),
+
+            // Signature Section
             new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
                 new TextRun({
                   text: "Sign And Stamp",
                   bold: true,
-                  size: 28, // 14pt
+                  size: 28,
                 }),
               ],
               spacing: { before: 300, after: 100 },
             }),
+
+            // Stamp Image
             new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
