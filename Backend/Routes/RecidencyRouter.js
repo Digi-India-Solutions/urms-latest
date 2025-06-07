@@ -11,5 +11,4 @@ recidenceRouter.post("/send-recidency-record", upload.fields([
 recidenceRouter.get("/get-recidency-record", getAllResidencies)
 
 
-
 module.exports = recidenceRouter
