@@ -32,6 +32,8 @@ const AllPendingTask = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedRemark, setSelectedRemark] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
+  const [selectedLogitude, setSelectedLongitude] = useState([]);
+  const [selectedTimestamp, setSelectedTimestamp] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const tealLeaderId = sessionStorage.getItem("teamLeaderId");
@@ -56,6 +58,16 @@ const AllPendingTask = () => {
     const addressImages = remark?.addressImage || [];
     const otherImages = remark?.images || [];
     return [...addressImages, ...otherImages];
+  };
+  const getAllLogitude = (remark) => {
+    const addressImageLatitude = remark?.addressImageLatitude || [];
+    const otherImagesLatitude = remark?.imagesLatitude || [];
+    return [...addressImageLatitude, ...otherImagesLatitude];
+  };
+  const getAllTimestamp = (remark) => {
+    const addressImageTimestamp = remark?.addressImageTimestamp || [];
+    const otherImagesTimestamp = remark?.imagesTimestamp || [];
+    return [...addressImageTimestamp, ...otherImagesTimestamp];
   };
   const getRemarkForTask = (taskId) => {
     return remarkData.find((remark) => remark.taskID?._id === taskId) || {};
@@ -811,6 +823,8 @@ const AllPendingTask = () => {
     setSelectedTask(task);
     setSelectedRemark(remark?.remark || "No Remark");
     setSelectedImages(getAllImages(remark));
+    setSelectedLongitude(getAllLogitude(remark));
+    setSelectedTimestamp(getAllTimestamp(remark));
     setShowModal(true);
   };
 
@@ -991,8 +1005,8 @@ const AllPendingTask = () => {
                           whiteSpace: "pre-line", // Ensures line break works
                         }}
                       >
-                        Date & Time : Sat May 24 12:08 2025 {"\n"}
-                        Location : 28.6377841 , 77.2244562
+                        Date & Time : {selectedTimestamp[index] || "N/A"} {"\n"}
+                        Location : {selectedLogitude[index] || "N/A"}
                       </div>
                     </div>
                   ))}
