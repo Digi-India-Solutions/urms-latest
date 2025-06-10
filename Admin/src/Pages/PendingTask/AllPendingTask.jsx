@@ -61,6 +61,7 @@ const AllPendingTask = () => {
   };
   const getAllLogitude = (remark) => {
     const addressImageLatitude = remark?.addressImageLatitude || [];
+  
     const otherImagesLatitude = remark?.imagesLatitude || [];
     return [...addressImageLatitude, ...otherImagesLatitude];
   };
@@ -70,7 +71,8 @@ const AllPendingTask = () => {
     return [...addressImageTimestamp, ...otherImagesTimestamp];
   };
   const getRemarkForTask = (taskId) => {
-    return remarkData.find((remark) => remark.taskID?._id === taskId) || {};
+    const remark = remarkData.find((remark) => remark.taskID?._id === taskId) || {};
+    return remark
   };
 
   const generatePdfReport = async (task, stampPicture) => {
@@ -719,6 +721,7 @@ const AllPendingTask = () => {
         const filterDataRemak = response.data.data;
         // const AllFilterdata = filterDataRemak.filter((x) => x.taskID.teamLeaderOrId === tealLeaderId)
         setRemarkData(filterDataRemak);
+      
       } catch (error) {
         console.error("Error fetching remarks", error);
       }
