@@ -7,23 +7,24 @@ const GeneratePdf = async (req, res) => {
     if (!htmlContent) {
       return res.status(400).json({ message: "htmlContent is required" });
     }
+    // const browser= await puppeteer.launch()
 
-    const browser = await puppeteer.launch({
-      headless: "new",
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium-browser", // Ensure Chromium is found
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--no-first-run",
-        "--no-zygote",
-        "--disable-gpu",
-        "--single-process",
-      ],
-    });
+        const browser = await puppeteer.launch({
+        headless: "new",
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium-browser", // Ensure Chromium is found
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-accelerated-2d-canvas",
+            "--no-first-run",
+            "--no-zygote",
+            "--disable-gpu",
+            "--single-process",
+        ],
+        });
 
-    // const browser = await puppeteer.launch();
+
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "load", timeout: 60000 });
 

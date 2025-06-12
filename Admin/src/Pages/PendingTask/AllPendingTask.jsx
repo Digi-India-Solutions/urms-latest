@@ -61,7 +61,7 @@ const AllPendingTask = () => {
   };
   const getAllLogitude = (remark) => {
     const addressImageLatitude = remark?.addressImageLatitude || [];
-  
+
     const otherImagesLatitude = remark?.imagesLatitude || [];
     return [...addressImageLatitude, ...otherImagesLatitude];
   };
@@ -71,8 +71,9 @@ const AllPendingTask = () => {
     return [...addressImageTimestamp, ...otherImagesTimestamp];
   };
   const getRemarkForTask = (taskId) => {
-    const remark = remarkData.find((remark) => remark.taskID?._id === taskId) || {};
-    return remark
+    const remark =
+      remarkData.find((remark) => remark.taskID?._id === taskId) || {};
+    return remark;
   };
 
   const generatePdfReport = async (task, stampPicture) => {
@@ -239,7 +240,8 @@ const AllPendingTask = () => {
 
     const selectedImages = getAllImages(remark) || [];
     const stampBuffer = await getImageBuffer(stampPicture);
-
+    const selectedLongitude = getAllLogitude(remark) || [];
+    const selectedTimestamp = getAllTimestamp(remark) || [];
     const imageBuffers = await Promise.all(
       selectedImages.slice(0, 6).map(async (img) => {
         try {
@@ -251,7 +253,7 @@ const AllPendingTask = () => {
     );
 
     const taskDetails = [
-      ["Client Name", "AXIS BANK"],
+      ["Client Name", task.bankName],
       ["Name of applicant", task.applicantName],
       ["Application no", task._id],
       ["Product", task.product],
@@ -321,8 +323,8 @@ const AllPendingTask = () => {
     });
 
     // Example caption used repeatedly
-    const imageCaption =
-      "Date & Time : Sat May 24 12:08 2025\nLocation : 28.6377841 , 77.2244562";
+    // const imageCaption =
+    //   "Date & Time : Sat May 24 12:08 2025\nLocation : 28.6377841 , 77.2244562";
 
     // Create the image table rows
     const imageTableRows = [];
@@ -352,7 +354,7 @@ const AllPendingTask = () => {
 
                 // Caption
                 new Paragraph({
-                  text: imageCaption,
+                  text: `Date & Time: ${selectedTimestamp[index] || "N/A"}\nLocation: ${selectedLongitude[index] || "N/A"}`,
                   alignment: AlignmentType.CENTER,
                   spacing: { before: 100 },
                 }),
@@ -467,115 +469,334 @@ const AllPendingTask = () => {
     saveAs(blob, `task_${task._id}_report.docx`);
   };
 
+  //   const generatePDF = (task) => {
+  //     const remark = getRemarkForTask(task._id);
+  //     const remarkText = remark?.remark || "No Remark";
+
+  //     const selectedImages = getAllImages(remark) || [];
+  //     const selectedLogitude = getAllLogitude(remark) || [];
+  //     const selectedTimestamp = getAllTimestamp(remark) || [];
+  //     const groups = [];
+  //     for (let i = 0; i < selectedImages.length; i += 3) {
+  //       const group = selectedImages.slice(i, i + 3);
+
+  //       const groupHtml = `
+  //       <div class="img-group">
+  //         ${group
+  //           .map(
+  //             (img,index) => `
+  //               <div class="img-box">
+  //                 <div class="img-caption">Date & Time : ${
+  //                   selectedTimestamp[index] || "N/A"
+  //                 }<br/>
+  //                 Location : ${selectedLogitude[index] || "N/A"}
+  //                 </div>
+  //             `
+  //           )
+  //           .join("")}
+  //       </div>
+  //     `;
+  //       groups.push(groupHtml);
+  //     }
+  //     return `
+  //     <!DOCTYPE html>
+  // <html lang="en">
+
+  // <head>
+  //     <meta charset="UTF-8">
+  //     <style>
+  //         body {
+  //             font-family: Arial, sans-serif;
+  //             font-size: 12px;
+  //             margin: 0;
+  //             padding: 10px;
+  //         }
+
+  //         .pdf-main-container {
+  //             width: 70%;
+  //             margin: 0 auto;
+  //             padding: 15px;
+  //             border: 1px solid #000;
+  //             background-color: #fff;
+  //         }
+
+  //         .center-text {
+  //             text-align: center;
+  //             font-weight: bold;
+  //             font-size: 16px;
+  //             text-transform: uppercase;
+  //             margin: 4px 0;
+  //         }
+
+  //         table {
+  //             width: 100%;
+  //             border-collapse: collapse;
+  //             margin: 15px 0;
+  //         }
+
+  //         th,
+  //         td {
+  //             border: 1px solid #000;
+  //             padding: 6px;
+  //             text-align: left;
+  //             font-size: 12px;
+  //         }
+
+  //         .remarks-title {
+  //             text-align: center;
+  //             font-weight: bold;
+  //             background-color: #e2e2e2;
+  //             border: 1px solid #000;
+  //             padding: 6px;
+  //             margin-top: 15px;
+  //             text-transform: uppercase;
+  //         }
+
+  //         .remarks-section {
+  //             border: 1px solid #000;
+  //             padding: 10px;
+  //             margin-top: -1px;
+  //             background-color: #fdfdfd;
+  //             line-height: 1.5;
+  //         }
+
+  //         .img-group {
+  //             display: flex;
+  //             justify-content: space-between;
+  //             gap: 10px;
+  //             margin-top: 20px;
+  //         }
+
+  //         .img-box {
+  //             width: 32%;
+  //             border: 1px solid #000;
+  //             display: flex;
+  //             flex-direction: column;
+  //             justify-content: space-between;
+  //             background-color: #f9f9f9;
+  //             position: relative;
+  //         }
+
+  //         .img-caption {
+  //             font-size: 10px;
+  //             text-align: center;
+  //             padding: 6px;
+  //             font-weight: bold;
+  //           background-color: rgba(0, 0, 0, 0.6);
+  //             max-width: 90%;
+  //             margin: auto;
+  //             color: white;
+  //             border-radius: 5px;
+  //             position: absolute;
+  //             bottom: 10px;
+  //             right: 10px;
+  //         }
+
+  //         .img-box img {
+  //             width: 100%;
+  //             height: 200px;
+  //             object-fit: cover;
+  //             display: block;
+  //         }
+
+  //         .signature {
+  //             text-align: center;
+  //             margin-top: 10px;
+  //             font-weight: bold;
+  //         }
+
+  //         .stamp img {
+  //             margin-top: 2px;
+  //             width: 80px;
+  //             height: auto;
+  //         }
+  //     </style>
+  // </head>
+
+  // <body>
+  //     <div class="pdf-main-container">
+
+  //         <div class="center-text">URMS INDIA PRIVATE LIMITED</div>
+  //         <div class="center-text">Verification Report</div>
+  // <table>
+
+  //             <tr>
+  //                 <th>Client Name</th>
+  //                 <td>${task.bankName}</td>
+  //                 <th>Name of applicant</th>
+  //                 <td>${task?.applicantName}</td>
+  //             </tr>
+  //             <tr>
+  //                 <th>Application no</th>
+  //                 <td>${task._id}</td>
+  //                 <th>Product</th>
+  //                 <td>${task.product}</td>
+  //             </tr>
+  //             <tr>
+  //                 <th>Applicant residence address</th>
+  //                 <td>${task.address}</td>
+  //                 <th>Applicant mob. No.</th>
+  //                 <td>${task.contactNumber}</td>
+  //             </tr>
+  //             <tr>
+  //                 <th>Date of receiving</th>
+  //                 <td>${task.assignDate}</td>
+  //                 <th>Date of reporting</th>
+  //                 <td>${new Date().toLocaleDateString()}</td>
+  //             </tr>
+  //         </table>
+
+  //         <div class="remarks-title">Verification Remarks</div>
+  //         <div class="remarks-section">
+  //           ${remarkText}
+  //         </div>
+
+  //         <table>
+  //             <tr>
+  //                 <th style="text-align: center;">Status</th>
+  //                 <th style="text-align: center;">@</th>
+  //             </tr>
+  //             <tr>
+  //                 <th colspan="2" style="text-align: center;">Photography</th>
+  //             </tr>
+  //         </table>
+
+  //            ${groups}
+
+  //         <div class="signature">
+  //             Sign And Stamp
+  //             <div class="stamp">
+  //                 <img src="${stampPicture}" alt="Stamp" />
+  //             </div>
+  //         </div>
+
+  //     </div>
+  // </body>
+
+  // </html>
+  //     `;
+  //   };
+
   const generatePDF = (task) => {
     const remark = getRemarkForTask(task._id);
     const remarkText = remark?.remark || "No Remark";
 
     const selectedImages = getAllImages(remark) || [];
+    const selectedLongitude = getAllLogitude(remark) || [];
+    const selectedTimestamp = getAllTimestamp(remark) || [];
+
     const groups = [];
     for (let i = 0; i < selectedImages.length; i += 3) {
       const group = selectedImages.slice(i, i + 3);
       const groupHtml = `
       <div class="img-group">
         ${group
-          .map(
-            (img) => `
+          .map((img, index) => {
+            const overallIndex = i + index;
+            return `
               <div class="img-box">
-                <div class="img-caption">${"Date & Time : Sat May 24 12:08 2025<br>Location : 28.6377841 , 77.2244562"}</div>
-                <img src="${img}" alt="Image" />
+                <img src="${img}" alt="Photo ${overallIndex + 1}" />
+                <div class="img-caption">
+                  Date & Time: ${selectedTimestamp[overallIndex] || "N/A"}<br />
+                  Location: ${selectedLongitude[overallIndex] || "N/A"}
+                </div>
               </div>
-            `
-          )
+            `;
+          })
           .join("")}
       </div>
     `;
       groups.push(groupHtml);
     }
+
     return `
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            margin: 0;
-            padding: 10px;
-        }
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
 
-        .pdf-main-container {
-            width: 70%;
-            margin: 0 auto;
-            padding: 15px;
-            border: 1px solid #000;
-            background-color: #fff;
-        }
+    .pdf-main-container {
+      width: 95%;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #000;
+      background-color: #fff;
+    }
 
-        .center-text {
+    .center-text {
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      margin: 4px 0;
+      text-transform: uppercase;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+
+    th, td {
+      border: 1px solid #000;
+      padding: 8px;
+      font-size: 12px;
+    }
+
+    .remarks-title {
+      text-align: center;
+      font-weight: bold;
+      background-color: #e2e2e2;
+      padding: 8px;
+      margin-top: 20px;
+      text-transform: uppercase;
+    }
+
+    .remarks-section {
+      border: 1px solid #000;
+      padding: 10px;
+      background-color: #fdfdfd;
+      line-height: 1.5;
+    }
+
+    .img-group {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .img-box {
+      width: 32%;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      position: relative;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+
+    .img-box img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+    }
+
+     .img-caption {
+           font-size: 10px;
             text-align: center;
-            font-weight: bold;
-            font-size: 16px;
-            text-transform: uppercase;
-            margin: 4px 0;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
-
-        th,
-        td {
-            border: 1px solid #000;
-            padding: 6px;
-            text-align: left;
-            font-size: 12px;
-        }
-
-        .remarks-title {
-            text-align: center;
-            font-weight: bold;
-            background-color: #e2e2e2;
-            border: 1px solid #000;
-            padding: 6px;
-            margin-top: 15px;
-            text-transform: uppercase;
-        }
-
-        .remarks-section {
-            border: 1px solid #000;
-            padding: 10px;
-            margin-top: -1px;
-            background-color: #fdfdfd;
-            line-height: 1.5;
-        }
-
-        .img-group {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .img-box {
-            width: 32%;
-            border: 1px solid #000;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            background-color: #f9f9f9;
-            position: relative;
-        }
-
-        .img-caption {
-            font-size: 10px;
-            text-align: center;
             padding: 6px;
             font-weight: bold;
-          background-color: rgba(0, 0, 0, 0.6);
+         background-color: #333;
             max-width: 90%;
             margin: auto;
             color: white;
@@ -585,94 +806,77 @@ const AllPendingTask = () => {
             right: 10px;
         }
 
-        .img-box img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            display: block;
-        }
+    .signature {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+    }
 
-        .signature {
-            text-align: center;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        .stamp img {
-            margin-top: 2px;
-            width: 80px;
-            height: auto;
-        }
-    </style>
+    .stamp img {
+      margin-top: 8px;
+      width: 80px;
+      height: auto;
+    }
+  </style>
 </head>
-
 <body>
-    <div class="pdf-main-container">
+  <div class="pdf-main-container">
+    <div class="center-text">URMS INDIA PRIVATE LIMITED</div>
+    <div class="center-text">Verification Report</div>
 
-        <div class="center-text">URMS INDIA PRIVATE LIMITED</div>
-        <div class="center-text">Verification Report</div>
-<table>
-      
-            <tr>
-                <th>Client Name</th>
-                <td>${task.bankName}</td>
-                <th>Name of applicant</th>
-                <td>${task?.applicantName}</td>
-            </tr>
-            <tr>
-                <th>Application no</th>
-                <td>${task._id}</td>
-                <th>Product</th>
-                <td>${task.product}</td>
-            </tr>
-            <tr>
-                <th>Applicant residence address</th>
-                <td>${task.address}</td>
-                <th>Applicant mob. No.</th>
-                <td>${task.contactNumber}</td>
-            </tr>
-            <tr>
-                <th>Date of receiving</th>
-                <td>${task.assignDate}</td>
-                <th>Date of reporting</th>
-                <td>${new Date().toLocaleDateString()}</td>
-            </tr>
-        </table>
+    <table>
+      <tr>
+        <th>Client Name</th>
+        <td>${task.bankName}</td>
+        <th>Name of Applicant</th>
+        <td>${task?.applicantName}</td>
+      </tr>
+      <tr>
+        <th>Application No</th>
+        <td>${task._id}</td>
+        <th>Product</th>
+        <td>${task.product}</td>
+      </tr>
+      <tr>
+        <th>Applicant Address</th>
+        <td>${task.address}</td>
+        <th>Contact No.</th>
+        <td>${task.contactNumber}</td>
+      </tr>
+      <tr>
+        <th>Date Received</th>
+        <td>${task.assignDate}</td>
+        <th>Reporting Date</th>
+        <td>${new Date().toLocaleDateString()}</td>
+      </tr>
+    </table>
 
-        <div class="remarks-title">Verification Remarks</div>
-        <div class="remarks-section">
-          ${remarkText}
-        </div>
+    <div class="remarks-title">Verification Remarks</div>
+    <div class="remarks-section">${remarkText}</div>
 
-        <table>
-            <tr>
-                <th style="text-align: center;">Status</th>
-                <th style="text-align: center;">@</th>
-            </tr>
-            <tr>
-                <th colspan="2" style="text-align: center;">Photography</th>
-            </tr>
-        </table>
+    <table>
+      <tr>
+        <th colspan="2" style="text-align: center;">Photography Evidence</th>
+      </tr>
+    </table>
 
-          
-           ${groups}
+    ${groups.join("")}
 
-        <div class="signature">
-            Sign And Stamp
-            <div class="stamp">
-                <img src="${stampPicture}" alt="Stamp" />
-            </div>
-        </div>
-
+    <div class="signature">
+      Sign and Stamp
+      <div class="stamp">
+        <img src="${stampPicture}" alt="Stamp" />
+      </div>
     </div>
+  </div>
 </body>
-
 </html>
-    `;
+`;
   };
 
   const handlePdf = async (task) => {
     const toastId = toast.loading("Generating PDF...");
+
     try {
       const res = await axios.post(
         "https://api.zaikanuts.shop/api/generate-pdf",
@@ -721,7 +925,6 @@ const AllPendingTask = () => {
         const filterDataRemak = response.data.data;
         // const AllFilterdata = filterDataRemak.filter((x) => x.taskID.teamLeaderOrId === tealLeaderId)
         setRemarkData(filterDataRemak);
-      
       } catch (error) {
         console.error("Error fetching remarks", error);
       }
@@ -930,9 +1133,7 @@ const AllPendingTask = () => {
                       <button
                         className="btn btn-outline-primary"
                         onClick={() =>
-                          generateWordDoc(
-                            tasks.find((t) => t._id === task._id),
-                          )
+                          generateWordDoc(tasks.find((t) => t._id === task._id))
                         }
                       >
                         Download Word
