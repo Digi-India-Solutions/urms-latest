@@ -37,7 +37,12 @@ const taskSchema = new mongoose.Schema({
     status: {
         type: String,
         default: "Pending",
-    }
+    },
+    overallStatus: {
+        type: String,
+        default: "Pending",
+    },
+
 }, { timestamps: true });
 
 // Create the model

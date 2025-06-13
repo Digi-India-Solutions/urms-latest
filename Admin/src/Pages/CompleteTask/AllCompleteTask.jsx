@@ -182,6 +182,7 @@ const AllCompleteTask = () => {
                                 <th scope="col">Address</th>
                                 <th scope="col">Tri</th>
                                 <th scope="col">Verifier</th>
+                                <th scope="col">Overall Status</th>
                                 <th scope="col">Images</th>
                                 <th scope="col">Remark</th>
                                 {/* <th scope="col">Edit</th> */}
@@ -205,6 +206,7 @@ const AllCompleteTask = () => {
                                         <td>{task.address}</td>
                                         <td>{task.trigger}</td>
                                         <td>{task.verifierNameOrId}</td>
+                                        <td>{task?.overallStatus ?? 'N/A'}</td>
                                         <td>
                                             {allImages.length > 0 ? (
                                                 <button onClick={() => downloadImagesAsPdf(allImages, task._id)} className='btn btn-success'>
