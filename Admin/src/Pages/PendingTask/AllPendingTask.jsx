@@ -234,240 +234,240 @@ const AllPendingTask = () => {
     pdfMake.createPdf(docDefinition).download(`task_${task._id}_report.pdf`);
   };
 
-  const generateWordDoc = async (task) => {
-    const remark = getRemarkForTask(task._id);
-    const remarkText = remark?.remark || "No Remark";
+  // const generateWordDoc = async (task) => {
+  //   const remark = getRemarkForTask(task._id);
+  //   const remarkText = remark?.remark || "No Remark";
 
-    const selectedImages = getAllImages(remark) || [];
-    const stampBuffer = await getImageBuffer(stampPicture);
-    const selectedLongitude = getAllLogitude(remark) || [];
-    const selectedTimestamp = getAllTimestamp(remark) || [];
-    const imageBuffers = await Promise.all(
-      selectedImages.slice(0, 6).map(async (img) => {
-        try {
-          return await getImageBuffer(img);
-        } catch {
-          return null;
-        }
-      })
-    );
+  //   const selectedImages = getAllImages(remark) || [];
+  //   const stampBuffer = await getImageBuffer(stampPicture);
+  //   const selectedLongitude = getAllLogitude(remark) || [];
+  //   const selectedTimestamp = getAllTimestamp(remark) || [];
+  //   const imageBuffers = await Promise.all(
+  //     selectedImages.slice(0, 6).map(async (img) => {
+  //       try {
+  //         return await getImageBuffer(img);
+  //       } catch {
+  //         return null;
+  //       }
+  //     })
+  //   );
 
-    const taskDetails = [
-      ["Client Name", task.bankName],
-      ["Name of applicant", task.applicantName],
-      ["Application no", task._id],
-      ["Product", task.product],
-      ["Applicant residence address", task.address],
-      ["Applicant mob. No.", task.contactNumber],
-      ["Date of receiving", task.assignDate],
-      ["Date of reporting", new Date().toLocaleDateString()],
-    ].map(
-      ([label, value]) =>
-        new TableRow({
-          children: [
-            new TableCell({
-              width: { size: 50, type: WidthType.PERCENTAGE },
-              children: [
-                new Paragraph({
-                  children: [
-                    new TextRun({ text: label, bold: true, size: 28 }), // 14pt
-                  ],
-                }),
-              ],
-            }),
-            new TableCell({
-              width: { size: 50, type: WidthType.PERCENTAGE },
-              children: [
-                new Paragraph({
-                  children: [
-                    new TextRun({ text: value || "-", size: 24 }), // 12pt
-                  ],
-                }),
-              ],
-            }),
-          ],
-        })
-    );
+  //   const taskDetails = [
+  //     ["Client Name", task.bankName],
+  //     ["Name of applicant", task.applicantName],
+  //     ["Application no", task._id],
+  //     ["Product", task.product],
+  //     ["Applicant residence address", task.address],
+  //     ["Applicant mob. No.", task.contactNumber],
+  //     ["Date of receiving", task.assignDate],
+  //     ["Date of reporting", new Date().toLocaleDateString()],
+  //   ].map(
+  //     ([label, value]) =>
+  //       new TableRow({
+  //         children: [
+  //           new TableCell({
+  //             width: { size: 50, type: WidthType.PERCENTAGE },
+  //             children: [
+  //               new Paragraph({
+  //                 children: [
+  //                   new TextRun({ text: label, bold: true, size: 28 }), // 14pt
+  //                 ],
+  //               }),
+  //             ],
+  //           }),
+  //           new TableCell({
+  //             width: { size: 50, type: WidthType.PERCENTAGE },
+  //             children: [
+  //               new Paragraph({
+  //                 children: [
+  //                   new TextRun({ text: value || "-", size: 24 }), // 12pt
+  //                 ],
+  //               }),
+  //             ],
+  //           }),
+  //         ],
+  //       })
+  //   );
 
-    const remarkTable = new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: [
-        new TableRow({
-          children: [
-            new TableCell({
-              children: [
-                new Paragraph({
-                  children: [
-                    new TextRun({
-                      text: "Verification Remarks:",
-                      bold: true,
-                      size: 32, // 16pt
-                    }),
-                  ],
-                  spacing: { after: 100 },
-                }),
-                new Paragraph({
-                  children: [
-                    new TextRun({
-                      text: remarkText || "N/A",
-                      bold: false,
-                      size: 24, // 12pt
-                    }),
-                  ],
-                }),
-              ],
-            }),
-          ],
-        }),
-      ],
-    });
+  //   const remarkTable = new Table({
+  //     width: { size: 100, type: WidthType.PERCENTAGE },
+  //     rows: [
+  //       new TableRow({
+  //         children: [
+  //           new TableCell({
+  //             children: [
+  //               new Paragraph({
+  //                 children: [
+  //                   new TextRun({
+  //                     text: "Verification Remarks:",
+  //                     bold: true,
+  //                     size: 32, // 16pt
+  //                   }),
+  //                 ],
+  //                 spacing: { after: 100 },
+  //               }),
+  //               new Paragraph({
+  //                 children: [
+  //                   new TextRun({
+  //                     text: remarkText || "N/A",
+  //                     bold: false,
+  //                     size: 24, // 12pt
+  //                   }),
+  //                 ],
+  //               }),
+  //             ],
+  //           }),
+  //         ],
+  //       }),
+  //     ],
+  //   });
 
-    // Example caption used repeatedly
-    // const imageCaption =
-    //   "Date & Time : Sat May 24 12:08 2025\nLocation : 28.6377841 , 77.2244562";
+  //   // Example caption used repeatedly
+  //   // const imageCaption =
+  //   //   "Date & Time : Sat May 24 12:08 2025\nLocation : 28.6377841 , 77.2244562";
 
-    // Create the image table rows
-    const imageTableRows = [];
+  //   // Create the image table rows
+  //   const imageTableRows = [];
 
-    for (let i = 0; i < 6; i += 3) {
-      const rowCells = [];
+  //   for (let i = 0; i < 6; i += 3) {
+  //     const rowCells = [];
 
-      for (let j = 0; j < 3; j++) {
-        const index = i + j;
-        const buffer = imageBuffers[index];
+  //     for (let j = 0; j < 3; j++) {
+  //       const index = i + j;
+  //       const buffer = imageBuffers[index];
 
-        if (buffer) {
-          rowCells.push(
-            new TableCell({
-              verticalAlign: VerticalAlign.CENTER,
-              children: [
-                // Image
-                new Paragraph({
-                  children: [
-                    new ImageRun({
-                      data: buffer,
-                      transformation: { width: 250, height: 150 },
-                    }),
-                  ],
-                  alignment: AlignmentType.CENTER,
-                }),
+  //       if (buffer) {
+  //         rowCells.push(
+  //           new TableCell({
+  //             verticalAlign: VerticalAlign.CENTER,
+  //             children: [
+  //               // Image
+  //               new Paragraph({
+  //                 children: [
+  //                   new ImageRun({
+  //                     data: buffer,
+  //                     transformation: { width: 250, height: 150 },
+  //                   }),
+  //                 ],
+  //                 alignment: AlignmentType.CENTER,
+  //               }),
 
-                // Caption
-                new Paragraph({
-                  text: `Date & Time: ${selectedTimestamp[index] || "N/A"}\nLocation: ${selectedLongitude[index] || "N/A"}`,
-                  alignment: AlignmentType.CENTER,
-                  spacing: { before: 100 },
-                }),
-              ],
-            })
-          );
-        } else {
-          rowCells.push(
-            new TableCell({
-              children: [
-                new Paragraph({ text: "", alignment: AlignmentType.CENTER }),
-              ],
-            })
-          );
-        }
-      }
+  //               // Caption
+  //               new Paragraph({
+  //                 text: `Date & Time: ${selectedTimestamp[index] || "N/A"}\nLocation: ${selectedLongitude[index] || "N/A"}`,
+  //                 alignment: AlignmentType.CENTER,
+  //                 spacing: { before: 100 },
+  //               }),
+  //             ],
+  //           })
+  //         );
+  //       } else {
+  //         rowCells.push(
+  //           new TableCell({
+  //             children: [
+  //               new Paragraph({ text: "", alignment: AlignmentType.CENTER }),
+  //             ],
+  //           })
+  //         );
+  //       }
+  //     }
 
-      imageTableRows.push(
-        new TableRow({
-          children: rowCells,
-        })
-      );
-    }
+  //     imageTableRows.push(
+  //       new TableRow({
+  //         children: rowCells,
+  //       })
+  //     );
+  //   }
 
-    // Final Document
-    const doc = new Document({
-      sections: [
-        {
-          properties: {},
-          children: [
-            new Paragraph({
-              alignment: AlignmentType.CENTER,
-              children: [
-                new TextRun({
-                  text: "URMS INDIA PRIVATE LIMITED",
-                  bold: true,
-                  size: 36, // 18pt
-                }),
-              ],
-            }),
-            new Paragraph({
-              alignment: AlignmentType.CENTER,
-              spacing: { before: 200 },
-              children: [
-                new TextRun({
-                  text: "Verification Report",
-                  bold: true,
-                  size: 32, // 16pt
-                }),
-              ],
-            }),
+  //   // Final Document
+  //   const doc = new Document({
+  //     sections: [
+  //       {
+  //         properties: {},
+  //         children: [
+  //           new Paragraph({
+  //             alignment: AlignmentType.CENTER,
+  //             children: [
+  //               new TextRun({
+  //                 text: "URMS INDIA PRIVATE LIMITED",
+  //                 bold: true,
+  //                 size: 36, // 18pt
+  //               }),
+  //             ],
+  //           }),
+  //           new Paragraph({
+  //             alignment: AlignmentType.CENTER,
+  //             spacing: { before: 200 },
+  //             children: [
+  //               new TextRun({
+  //                 text: "Verification Report",
+  //                 bold: true,
+  //                 size: 32, // 16pt
+  //               }),
+  //             ],
+  //           }),
 
-            // Task Details Table
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: taskDetails,
-            }),
+  //           // Task Details Table
+  //           new Table({
+  //             width: { size: 100, type: WidthType.PERCENTAGE },
+  //             rows: taskDetails,
+  //           }),
 
-            new Paragraph({ text: " " }),
-            remarkTable,
+  //           new Paragraph({ text: " " }),
+  //           remarkTable,
 
-            new Paragraph({ text: " " }),
+  //           new Paragraph({ text: " " }),
 
-            // Photographs Title
-            new Paragraph({
-              children: [
-                new TextRun({ text: "Photographs", bold: true, size: 28 }),
-              ],
-              spacing: { before: 300, after: 100 },
-            }),
+  //           // Photographs Title
+  //           new Paragraph({
+  //             children: [
+  //               new TextRun({ text: "Photographs", bold: true, size: 28 }),
+  //             ],
+  //             spacing: { before: 300, after: 100 },
+  //           }),
 
-            // Image Table
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: imageTableRows,
-            }),
+  //           // Image Table
+  //           new Table({
+  //             width: { size: 100, type: WidthType.PERCENTAGE },
+  //             rows: imageTableRows,
+  //           }),
 
-            new Paragraph({ text: " " }),
+  //           new Paragraph({ text: " " }),
 
-            // Signature Section
-            new Paragraph({
-              alignment: AlignmentType.CENTER,
-              children: [
-                new TextRun({
-                  text: "Sign And Stamp",
-                  bold: true,
-                  size: 28,
-                }),
-              ],
-              spacing: { before: 300, after: 100 },
-            }),
+  //           // Signature Section
+  //           new Paragraph({
+  //             alignment: AlignmentType.CENTER,
+  //             children: [
+  //               new TextRun({
+  //                 text: "Sign And Stamp",
+  //                 bold: true,
+  //                 size: 28,
+  //               }),
+  //             ],
+  //             spacing: { before: 300, after: 100 },
+  //           }),
 
-            // Stamp Image
-            new Paragraph({
-              alignment: AlignmentType.CENTER,
-              children: [
-                new ImageRun({
-                  data: stampBuffer,
-                  transformation: {
-                    width: 200,
-                    height: 100,
-                  },
-                }),
-              ],
-            }),
-          ],
-        },
-      ],
-    });
+  //           // Stamp Image
+  //           new Paragraph({
+  //             alignment: AlignmentType.CENTER,
+  //             children: [
+  //               new ImageRun({
+  //                 data: stampBuffer,
+  //                 transformation: {
+  //                   width: 200,
+  //                   height: 100,
+  //                 },
+  //               }),
+  //             ],
+  //           }),
+  //         ],
+  //       },
+  //     ],
+  //   });
 
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, `task_${task._id}_report.docx`);
-  };
+  //   const blob = await Packer.toBlob(doc);
+  //   saveAs(blob, `task_${task._id}_report.docx`);
+  // };
 
   //   const generatePDF = (task) => {
   //     const remark = getRemarkForTask(task._id);
@@ -677,6 +677,287 @@ const AllPendingTask = () => {
   //     `;
   //   };
 
+  const generateWordDoc = async (task) => {
+  const remark = getRemarkForTask(task._id);
+  const remarkText = remark?.remark || "No Remark";
+
+  const selectedImages = getAllImages(remark) || [];
+  const stampBuffer = await getImageBuffer(stampPicture);
+  const selectedLongitude = getAllLogitude(remark) || [];
+  const selectedTimestamp = getAllTimestamp(remark) || [];
+  const imageBuffers = await Promise.all(
+    selectedImages.slice(0, 6).map(async (img) => {
+      try {
+        return await getImageBuffer(img);
+      } catch {
+        return null;
+      }
+    })
+  );
+
+  const taskDetails = [
+    ["Client Name", task.bankName],
+    ["Name of applicant", task.applicantName],
+    ["Application no", task._id],
+    ["Product", task.product],
+    ["Applicant residence address", task.address],
+    ["Applicant mob. No.", task.contactNumber],
+    ["Date of receiving", task.assignDate],
+    ["Date of reporting", new Date().toLocaleDateString()],
+  ].map(
+    ([label, value]) =>
+      new TableRow({
+        children: [
+          new TableCell({
+            width: { size: 50, type: WidthType.PERCENTAGE },
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({ text: label, bold: true, size: 28 }), // 14pt
+                ],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 50, type: WidthType.PERCENTAGE },
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({ text: value || "-", size: 24 }), // 12pt
+                ],
+              }),
+            ],
+          }),
+        ],
+      })
+  );
+
+  const remarkTable = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Verification Remarks:",
+                    bold: true,
+                    size: 32, // 16pt
+                  }),
+                ],
+                spacing: { after: 100 },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: remarkText || "N/A",
+                    bold: false,
+                    size: 24, // 12pt
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+
+  const imageTableRows = [];
+
+  for (let i = 0; i < 6; i += 3) {
+    const rowCells = [];
+
+    for (let j = 0; j < 3; j++) {
+      const index = i + j;
+      const buffer = imageBuffers[index];
+
+      if (buffer) {
+        rowCells.push(
+          new TableCell({
+            verticalAlign: VerticalAlign.CENTER,
+            children: [
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: buffer,
+                    transformation: { width: 250, height: 150 },
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+              }),
+              new Paragraph({
+                text: `Date & Time: ${selectedTimestamp[index] || "N/A"}\nLocation: ${selectedLongitude[index] || "N/A"}`,
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 100 },
+              }),
+            ],
+          })
+        );
+      } else {
+        rowCells.push(
+          new TableCell({
+            children: [
+              new Paragraph({ text: "", alignment: AlignmentType.CENTER }),
+            ],
+          })
+        );
+      }
+    }
+
+    imageTableRows.push(
+      new TableRow({
+        children: rowCells,
+      })
+    );
+  }
+
+  const doc = new Document({
+    sections: [
+      {
+        properties: {},
+        children: [
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: "URMS INDIA PRIVATE LIMITED",
+                bold: true,
+                size: 36, // 18pt
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 200 },
+            children: [
+              new TextRun({
+                text: "Verification Report",
+                bold: true,
+                size: 32, // 16pt
+              }),
+            ],
+          }),
+
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: taskDetails,
+          }),
+
+          new Paragraph({ text: " " }),
+          remarkTable,
+
+          new Paragraph({ text: " " }),
+
+          // ✅ Inserted: Status and Images Table
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({ text: "Status", bold: true, size: 28 }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({ text: task.status || "N/A", size: 24 }),
+                        ],
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({
+                      columnSpan: 2,
+                    children: [
+                      new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [
+                          new TextRun({ text: "Photograph", bold: true, size: 28 }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  // new TableCell({
+                  //   children: [
+                  //     new Paragraph({
+                  //       children: [
+                  //         new TextRun({
+                  //           text: selectedImages.length > 0
+                  //             ? `${selectedImages.length} image(s) selected`
+                  //             : "No Images",
+                  //           size: 24,
+                  //         }),
+                  //       ],
+                  //     }),
+                  //   ],
+                  // }),
+                ],
+              }),
+            ],
+          }),
+
+          new Paragraph({ text: " " }),
+
+          new Paragraph({
+            children: [
+              new TextRun({ text: "Photographs", bold: true, size: 28 }),
+            ],
+            spacing: { before: 300, after: 100 },
+          }),
+
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: imageTableRows,
+          }),
+
+          new Paragraph({ text: " " }),
+
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: "Sign And Stamp",
+                bold: true,
+                size: 28,
+              }),
+            ],
+            spacing: { before: 300, after: 100 },
+          }),
+
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new ImageRun({
+                data: stampBuffer,
+                transformation: {
+                  width: 200,
+                  height: 100,
+                },
+              }),
+            ],
+          }),
+        ],
+      },
+    ],
+  });
+
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, `task_${task._id}_report.docx`);
+};
+
   const generatePDF = (task) => {
     const remark = getRemarkForTask(task._id);
     const remarkText = remark?.remark || "No Remark";
@@ -854,11 +1135,20 @@ const AllPendingTask = () => {
     <div class="remarks-title">Verification Remarks</div>
     <div class="remarks-section">${remarkText}</div>
 
-    <table>
-      <tr>
-        <th colspan="2" style="text-align: center;">Photography Evidence</th>
-      </tr>
-    </table>
+  <div style="display: flex; border: 1px solid #000; width: 100%; margin-top: 20px;">
+  <div style="flex: 1; border-right: 1px solid #000; padding: 10px; font-size: 13px;">
+    <strong>Status:</strong>
+    
+  </div>
+  <div style="flex: 1; padding: 10px; font-size: 13px;">
+    ${task.status || "N/A"}
+  </div>
+</div>
+
+<!-- Section title -->
+<div style="text-align: center; font-weight: bold; margin-top: 15px; font-size: 14px; border: 1px solid #000;  padding: 6px; background-color: #f0f0f0;">
+  Photography Evidence
+</div>
 
     ${groups.join("")}
 
@@ -1026,6 +1316,8 @@ const AllPendingTask = () => {
   //   };
   const handleViewRemark = (remark) => {
     const task = tasks.find((t) => t._id === remark.taskID?._id);
+    console.log("remark", remark);
+    
     setSelectedTask(task);
     setSelectedRemark(remark?.remark || "No Remark");
     setSelectedImages(getAllImages(remark));
